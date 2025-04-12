@@ -20,6 +20,7 @@ from collections.abc import Iterable
 from xmlrpc.client import DateTime
 
 from beancount.core.number import Decimal
+from beancount.core.amount import Amount
 from beancount.core.number import ZERO
 from beancount.core.data import Transaction
 
@@ -27,6 +28,7 @@ from fava.ext import FavaExtensionBase
 from fava.helpers import FavaAPIError
 from fava.core.conversion import cost_or_value
 from fava.core.query_shell import QueryShell
+from fava.core.query import QueryResultTable
 from fava.context import g
 from .irr import IRR
 
@@ -296,7 +298,10 @@ class PortfolioSummaryInstance:  # pragma: no cover
                 f"convert(value(position) ,'{self.operating_currency}',today()) AS value "
                 f"WHERE currency = '{row_currency}' AND account ='{node.name}' "
                 "ORDER BY currency, cost_date")
+            assert isinstance(result, QueryResultTable)
             for row_cost,row_value in result.rows:
+                assert isinstance(row_cost, Amount) and row_cost.number is not None
+                assert isinstance(row_value, Amount) and row_value.number is not None
                 total_currency_cost+=row_cost.number
                 total_currency_value+=row_value.number
             row["balance"] = round(total_currency_value, 2)
