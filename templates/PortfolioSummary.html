@@ -30,7 +30,6 @@
 <a href="{{ url_for('account', name=account_name) }}" class="account">
   {{- ':'.join(account_name.rsplit(':', n_last_segments)[1:]) if n_last_segments else account_name -}}
 </a>
-<!-- {% if account_name and ledger.accounts[account_name].meta.get('fava-uptodate-indication') %} -->
 {%- if ledger.accounts[account_name].uptodate_status %}
 
 {{ indicator(ledger, account_name) }}
@@ -42,7 +41,6 @@
 <a href="{{ url_for('account', name=account_name) }}" class="account">
   {{- account_name.removeprefix(prefix).strip(":") -}}
 </a>
-<!-- {% if account_name and ledger.accounts[account_name].meta.get('fava-uptodate-indication') %} -->
 {%- if ledger.accounts[account_name].uptodate_status %}
 
 {{ indicator(ledger, account_name) }}
@@ -57,46 +55,45 @@
   {% set rows = data[1] %}
   <h3>{{title}}</h3>
   <tree-table>
-    <ol class="flex-table tree-table" title="{{ _('Hold Shift while clicking to expand all children.') }}">
-      <li class="head">
-        <p>
-          <span class="account-cell"><button type="button" class="link expand-all hidden" title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></span>
+    <table class="flex-table tree-table" title="{{ _('Hold Shift while clicking to expand all children.') }}">
+      <thead class="head">
+        
+          <td class="account-cell"><button type="button" class="link expand-all hidden" title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></td>
           {% for name, type in types %}
           {% if name != "account" %}
-          <span class="num">{{ name }}</span>
+          <td class="num">{{ name }}</td>
           {% endif %}
           {% endfor %}
-        </p>
-      </li>
+        
+      </thead>
       {% with ns = namespace(parents=[]) %}
       {% for row in rows recursive %}
 
-      <li{{ ' class=toggled' if loop.depth0 == 1 else '' }}>
+      <tr{{ ' class=toggled' if loop.depth0 == 1 else '' }}>
         <p>
-          <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if row.children else '' }}" data-account-name="{{ row.account }}">
+          <td class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if row.children else '' }}" data-account-name="{{ row.account }}">
             {{ account_name_suff(ledger, row.account, ns.parents[-1] if ns.parents else "") }}
-            <!-- {{ account_name2(ledger, row.account, 2 if (ns.parents.__len__() >= 2) else 0) }} -->
-          </span>
+          </td>
           {% for name, type in types %}
           {% if name != "account" %}
             {% if name != "PnL" and name != "balance" %}
-            <span class="num"> {{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}</span>
+            <td class="num"> {{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}</td>
             {% elif name == "balance" %}
-            <span class="num">{{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}{% if row['last-date'] != None %}<br><span class="date">({{row['last-date']}})</span>{% endif %}</span>
-            {% elif name == "PnL" and row[name] >=0 %} <span class="num PnL positive"> {{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}</span>
-            {% elif name == "PnL" and row[name] <=0 %} <span class="num PnL negative"> {{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}</span>
+            <td class="num">{{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}{% if row['last-date'] != None %}<br><td class="date">({{row['last-date']}})</td>{% endif %}</td>
+            {% elif name == "PnL" and row[name] >=0 %} <td class="num PnL positive"> {{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}</td>
+            {% elif name == "PnL" and row[name] <=0 %} <td class="num PnL negative"> {{ '' if not row[name] else ('{}%' if type == 'Percent' else '{:,}').format(row[name]) }}</td>
             {% endif %}
           {% endif %}
           {% endfor %}
         </p>
       {% if row.children %}
         {%- set ns.parents = (ns.parents + [row.account]) -%}
-        <ol>{{ loop(row.children) }}</ol>
+        <tr>{{ loop(row.children) }}</tr>
         {%- set ns.parents = (ns.parents[:-1]) -%}
       {% endif %}
-      </li>
+      </tr>
       {% endfor %}
       {% endwith %}
-    </ol>
+    </table>
   </tree-table>
 {% endfor %}
