@@ -300,6 +300,9 @@ class PortfolioSummaryInstance:  # pragma: no cover
                 "ORDER BY currency, cost_date")
             assert isinstance(result, QueryResultTable)
             for row_cost,row_value in result.rows:
+                if row_cost is None:
+                    # Probably a MMF
+                    continue
                 assert isinstance(row_cost, Amount) and row_cost.number is not None
                 assert isinstance(row_value, Amount) and row_value.number is not None
                 total_currency_cost+=row_cost.number
